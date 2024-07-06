@@ -1,29 +1,26 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
-import connectDB from './DB/connectDB.js';
+// import connectDB from './DB/connectDB.js';
 
 const app = express();
 app.use(express.json());
 
 
 
-app.get('/api/hello', (req,res) =>{
-    const {visitor_name} = req.query;
-    const client_ip = req.ip;
-    const location = 'New York';
-    const temperature = 11;
+app.get("/api/hello", async (req,res) => {
+    try {
+        const ip = req.headers['x-forwarded-for'] || req.ip;
+        const geo = await get_location(ip)
+        const { visitor_name } = req.query
+        res.json({
+            client_ip: ip,
+            location: geo.location.name,
+            geeting: `Hello, ${visitor_name}!, the temperature is ${geo.current.temp_c} degrees in ${geo.location.name}`
+        })
+    } catch (error) {
 
-    const greeting = `Hello, ${visitor_name}! The temperature is ${temperature} degrees Celcius in New York`;
-    res.json({client_ip, location, greeting });
-});
-
-const start = async () => {
-   try{
-    connectDB()
-    app.listen(process.env.PORT, console.log(`Server is listening on ${process.env.PORT}`))
-   }catch (error){
-    console.log(error)
-   }
-}
-start();
+        res.status(500).json({ message: "There seems to be an error" })
+    }
+})
+app.listen(process.env.PORT, () => console.log("Server running"))
