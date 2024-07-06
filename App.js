@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import get_location from './get_location/location.js'
 // import connectDB from './DB/connectDB.js';
 
 const app = express();
